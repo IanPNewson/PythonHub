@@ -10,6 +10,7 @@ class HubClient:
     _encoding = 'ascii'
     _thread: [None, threading.Thread]
     socket: [socket.socket, None]
+    configuration: HubConfiguration
 
     def __init__(self, configuration=None):
         self.configuration = configuration or HubConfiguration.EnvironmentHubConfiguration()
@@ -19,7 +20,7 @@ class HubClient:
         self.data = bytearray()
         self._thread = None
 
-    def add_handler(self, typeName: str, handler :(lambda message: None)):
+    def add_handler(self, typeName: [str, None], handler :(lambda message: None)):
         self.handlers.append((typeName, handler))
 
     def start(self):
