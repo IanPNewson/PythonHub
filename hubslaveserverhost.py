@@ -25,14 +25,14 @@ def main(args):
     else:
         slave_config = EnvironmentHubConfiguration()
 
-    hub = HubSlaveServer.HubSlaveServer(slave_config, master_config)
+    hub = HubSlaveServer.HubSlaveServer(master_config, slave_config)
     # hub.add_handler('StfcHubMessageTypes.ImagePostedMessage', lambda message: print(message))
-    hub.add_handler(typeName=None, handler=lambda message: print(message))
+    hub.client.add_handler(typeName=None, handler=lambda message: print(message))
 
     with hub:
         txt = None
         while txt != 'exit':
-            txt = input('Type exit to stop')
+            txt = input('Type exit to stop\n')
 
     print('done')
 

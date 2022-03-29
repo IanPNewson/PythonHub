@@ -1,19 +1,18 @@
 import socket
-from . import HubConfiguration
 from . import Message
 import threading
+from .HubDataReceiver import HubDataReceiver
 from .InvalidStateException import InvalidStateException
 
 
-class HubClient:
+class HubClient(HubDataReceiver):
 
-    _encoding = 'ascii'
     _thread: [None, threading.Thread]
     socket: [socket.socket, None]
-    configuration: HubConfiguration
 
     def __init__(self, configuration=None):
-        self.configuration = configuration or HubConfiguration.EnvironmentHubConfiguration()
+        HubDataReceiver.__init__(self, configuration)
+
         self.handlers = []
         self.socket = None
         self.running = False
@@ -22,6 +21,14 @@ class HubClient:
 
     def add_handler(self, typeName: [str, None], handler :(lambda message: None)):
         self.handlers.append((typeName, handler))
+
+    def send(self, message: Message):
+        if self.socket is None or not self.running:
+            raise InvalidStateException(f'Cannot send a message as this hub is not connected')
+
+        data = message.to_bytes(HubDataReceiver.encoding)
+
+        self.socket.send(data)
 
     def start(self):
         if self._thread is not None or self.running:
@@ -38,11 +45,8 @@ class HubClient:
         while self.running:
             byte = self.socket.recv(1)
             if byte == b'\n':
-                message = self.data.decode(encoding=HubClient._encoding)
+                message = self.parse_message(self.data)
                 self.data = bytearray()
-
-                parts = message.split(chr(127))
-                message = Message.Message(parts[0], parts[1:])
 
                 for handler in self.handlers:
                     if handler[0] == message.typeName or handler[0] is None:

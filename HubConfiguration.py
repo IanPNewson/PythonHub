@@ -19,6 +19,9 @@ class HubConfiguration:
     def hostPort(self):
         return self.host, self.port
 
+    def for_server(self):
+        return
+
 
 class EnvironmentHubConfiguration(HubConfiguration):
 
